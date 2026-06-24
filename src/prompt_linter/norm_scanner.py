@@ -18,7 +18,7 @@ import torch
 logger = logging.getLogger(__name__)
 
 # 默认参数
-DEFAULT_CHUNK_SIZE = 128
+DEFAULT_CHUNK_SIZE = 32
 WEAK_PERCENTILE = 15
 
 

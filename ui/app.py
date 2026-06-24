@@ -290,7 +290,7 @@ with tab2:
     with col1:
         scan_btn = st.button("📡 扫描", type="primary", use_container_width=True)
     with col2:
-        cs = st.number_input("块大小 (Token)", min_value=16, max_value=512, value=128, step=16)
+        cs = st.number_input("块大小 (Token)", min_value=8, max_value=256, value=32, step=8)
 
     if scan_btn:
         if not long_text.strip():

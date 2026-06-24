@@ -113,10 +113,10 @@ class TestHappyPath:
 class TestDefaultConfig:
     """默认构造参数验证（M1 修复）"""
 
-    def test_default_chunk_size_is_128(self):
-        """默认 chunk_size 应为 128"""
+    def test_default_chunk_size_is_32(self):
+        """默认 chunk_size 应为 32"""
         s = NormScanner()
-        assert s.chunk_size == 128
+        assert s.chunk_size == 32
 
     def test_default_weak_percentile_is_15(self):
         """默认 weak_percentile 应为 15"""
