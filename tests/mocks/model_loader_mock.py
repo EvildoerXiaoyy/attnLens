@@ -18,10 +18,12 @@ from typing import Optional
 class MockConfig:
     """模拟 HuggingFace 模型配置"""
 
-    def __init__(self, num_hidden_layers: int = 6, hidden_size: int = 8, num_attention_heads: int = 4):
+    def __init__(self, num_hidden_layers: int = 6, hidden_size: int = 8, num_attention_heads: int = 4,
+                 max_position_embeddings: int = 32768):
         self.num_hidden_layers = num_hidden_layers
         self.hidden_size = hidden_size
         self.num_attention_heads = num_attention_heads
+        self.max_position_embeddings = max_position_embeddings
 
 
 class MockOutput:

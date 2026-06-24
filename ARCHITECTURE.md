@@ -135,7 +135,7 @@ UI Layer (Streamlit)
 - **延迟**：首次需下载约 1GB 模型（分钟级）；后续分析 1K tokens 约 2-5 秒，10K tokens 约 10-30 秒
 - **网络**：仅模型下载时需要，运行时可离线
 - **模型参数量**：0.5B（Qwen2.5-0.5B）
-- **最大输入长度**：Qwen2.5-0.5B 上下文窗口（通常 32K tokens）
+- **最大输入长度**：Qwen2.5-0.5B 模型最大 32K tokens（`max_position_embeddings=32768`），注意 tokenizer 的 `model_max_length` 为 131K，代码中以模型配置为准
 
 ## 边界声明（写在 UI 和 README 中）
 

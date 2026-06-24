@@ -82,10 +82,10 @@ class PromptLinter:
         start_time = time.time()
         self._ensure_model_loaded()
 
-        # 检查输入长度
+        # 检查输入长度（使用模型的 max_position_embeddings 而非 tokenizer 的 model_max_length）
         encoded = self._tokenizer(text, return_tensors="pt")
         total_tokens = encoded["input_ids"].shape[1]
-        max_length = getattr(self._tokenizer, "model_max_length", 32768)
+        max_length = self._model.config.max_position_embeddings
         if total_tokens > max_length:
             raise InputTooLongError(
                 f"输入长度（{total_tokens} tokens）超过模型最大长度（{max_length} tokens）"
