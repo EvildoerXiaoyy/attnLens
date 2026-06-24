@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+**Final**（实验已终止，结论见 docs/experiment-report.md）
 
 ## Context
 
@@ -31,3 +31,4 @@ Proposed
 - **更差**：0.5B 的 Attention 分布不完全等同于 70B，存在测量误差
 - **更差**：无法检测仅在大模型深层才出现的语义混淆问题
 - **需要接受**："0.5B ≠ 70B" 必须在 UI 和文档中明确标注，防止用户过度解读结果
+- **实验验证**：实际测试证实 0.5B 的浅层 attention 无法可靠区分"逻辑谬误"与"复杂指令"。详见 `docs/experiment-report.md`

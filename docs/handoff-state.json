@@ -1,0 +1,14 @@
+{
+  "workflow_stage": "review",
+  "current_module": "none",
+  "completed_modules": ["model-loader", "entropy-analyzer", "norm-scanner", "ui-layer"],
+  "last_adr_number": 2,
+  "active_adr_ids": ["ADR-001", "ADR-002"],
+  "baseline_locked": true,
+  "reconcile_pending": false,
+  "project_status": "terminated",
+  "termination_reason": "浅层物理量在工业级输入下不可行，信噪比不足",
+  "experiment_report": "docs/experiment-report.md",
+  "total_tests": 86,
+  "total_commits": 13
+}
