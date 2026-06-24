@@ -1,0 +1,82 @@
+# Reasonix configuration.
+# Resolution order: flag > ./reasonix.toml > ~/.reasonix/config.toml > built-in defaults.
+# Fields marked user/global only are not overridden by ./reasonix.toml.
+# Secrets come from the environment via api_key_env; never put keys here.
+
+config_version = 3   # schema marker for diagnostics; old versions may ignore it
+default_model = "deepseek-flash"
+# language      = "zh"   # ui/model language; empty = auto-detect from $LANG / $REASONIX_LANG
+
+[agent]
+# system_prompt = """..."""   # omit to use the built-in prompt for this version
+# system_prompt_file = "prompts/system.md"   # overrides system_prompt when set
+temperature       = 0.0
+# reasoning_language = "zh"   # visible reasoning language: auto|zh|en
+# auto_plan_classifier = "deepseek-flash"   # optional; only used for borderline tasks
+soft_compact_ratio  = 0.5   # notice only; keeps cache-first prefix intact
+compact_ratio       = 0.8   # try compacting when prompt reaches this fraction
+compact_force_ratio = 0.9   # force compacting at this high-water mark
+# keep                = ["errors"]   # compaction keep policy: errors, user_marked
+# recent_keep         = 2   # minimum recent messages kept verbatim
+cold_resume_prune   = true   # elide stale tool results when reopening a session past the provider cache window
+# planner_model = "deepseek-pro"   # optional: enable two-model collaboration
+# subagent_model = "deepseek-pro"   # optional default for runAs=subagent skills
+# subagent_models = { review = "deepseek-pro", security_review = "deepseek-pro" }   # per-skill overrides
+# subagent_effort = "high"   # optional default effort for subagents
+# subagent_efforts = { review = "max", task = "high" }   # per-tool/skill effort overrides
+# output_style = "explanatory"   # explanatory | learning | concise | custom; empty = default
+
+[tools]
+enabled = []   # empty = all built-in tools
+bash_timeout_seconds = 120   # foreground safety cap; set 0 for no tool-local cap
+
+[tools.background_jobs]
+stalled_warning_seconds = 900   # warn once per background job after this many quiet seconds; 0 disables
+
+[lsp]
+enabled = true   # language server tools; servers launch lazily when used
+# [lsp.servers.go]
+# command = "gopls"
+# args = []
+# extensions = [".go"]
+
+[skills]
+# paths = ["~/my-skills", "../shared/skills"]   # extra custom skill roots
+# excluded_paths = ["~/.agents/skills"]   # hide convention roots without deleting folders
+# max_depth = 3   # nested scan depth; set 1 for legacy root-only discovery
+# disabled_skills = ["review"]   # hide noisy or unwanted skills
+
+[permissions]
+# Per-call gating. mode = writer fallback when no rule matches: ask|allow|deny.
+# Readers always default to allow. Precedence: deny > ask > allow > fallback.
+# Rules are "Tool" or "Tool(specifier)"; e.g. Bash(go test:*), Edit(src/**).
+mode  = "ask"
+# deny = ["Bash(rm -rf*)", "Bash(git push*)"]   # hard-blocked in every mode
+allow = ["Bash(python3 --version:*)", "Bash(python3 -c \"import urllib.request, re; html=urllib.request.urlopen('https://chat.deepseek.com/share/053t7t7ufasabwwp34').read().decode('utf-8'); print(len(html))\")", "Bash(python3 -c \"import urllib.request, re; req=urllib.request.Request('https://chat.deepseek.com/share/053t7t7ufasabwwp34', headers={'User-Agent':'Mozilla/5.0'}); html=urllib.request.urlopen(req).read().decode('utf-8')\" 2>&1 | head -5)", "Bash(python3 -c \"\nimport urllib.request, re, json\nreq = urllib.request.Request('https://chat.deepseek.com/share/053t7t7ufasabwwp34', headers={'User-Agent':'Mozilla/5.0'})\nhtml = urllib.request.urlopen(req).read().decode('utf-8')\n# Look for script tags with JSON data\nscripts = re.findall(r'<script[^>]*>(.*?)</script>', html, re.DOTALL)\nfor i, s in enumerate(scripts):\n    if len(s) > 100:\n        print(f'Script {i}: {len(s)} chars')\n        print(s[:500])\n        print('---')\n\" 2>&1)", "Bash(python3 -c \"\nimport urllib.request, re\nreq = urllib.request.Request('https://chat.deepseek.com/share/053t7t7ufasabwwp34', headers={'User-Agent':'Mozilla/5.0'})\nhtml = urllib.request.urlopen(req).read().decode('utf-8')\n# Look for API endpoints or data\npatterns = ['api', 'share', 'chat', 'message', 'data', 'fetch', 'axios', '/v1/', '/v2/', '/api/']\nfor p in patterns:\n    matches = re.findall(r'[\\\"\\']([^\\\"\\']*' + p + r'[^\\\"\\']*)[\\\"\\']', html, re.IGNORECASE)\n    for m in matches:\n        if len(m) > 10 and ' ' not in m:\n            print(m)\n\" 2>&1)", "run_skill"]
+# ask = ["Edit(src/**)"]   # force a prompt even if otherwise allowed
+
+[sandbox]
+# Confine tool blast radius. File-writers (write_file/edit_file/multi_edit/move_file)
+# may only write under workspace_root (empty = current dir) and allow_write extras.
+# bash = "enforce" (default) jails each command in an OS sandbox (macOS now;
+# graceful fallback elsewhere); "off" disables it. network allows egress.
+# workspace_root = ""            # default: current working directory
+# allow_write = ["/tmp"]          # extra dirs writers may also modify
+bash    = "enforce"
+network = true
+
+[statusline]
+# A custom status line: a command whose first stdout line replaces the built-in
+# data row. It receives {"model","contextUsed","contextWindow","cwd"} as JSON on stdin.
+# command = "my-statusline.sh"
+
+# External MCP servers. type: "stdio" (default, a subprocess) | "http" | "sse".
+# ${VAR} / ${VAR:-default} are expanded from the environment in command/args/env/url/headers.
+# [[plugins]]
+# name    = "example"
+# command = "reasonix-plugin-example"
+# [[plugins]]                                  # a remote server over Streamable HTTP
+# name    = "stripe"
+# type    = "http"
+# url     = "https://mcp.stripe.com"
+# headers = { Authorization = "Bearer ${STRIPE_KEY}" }

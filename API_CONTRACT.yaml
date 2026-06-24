@@ -1,0 +1,114 @@
+# API_CONTRACT.yaml — Prompt 注意力诊断器 形式化契约
+# 版本: v0.1-demo
+# 说明: 供 /test-gen 和 /mock-gen 解析的接口定义
+
+services:
+  prompt-linter:
+    methods:
+      - name: analyze
+        description: >
+          统一分析入口。对输入文本同时执行注意力熵变率检测和隐藏态范数扫描，
+          返回 Token 级和 Chunk 级风险结果。
+        input:
+          text: string
+          chunk_size: integer?  # 范数扫描的块大小，默认 128
+        output:
+          token_risks:
+            - token: string
+              token_id: integer
+              entropy_delta: float
+              risk_level: string   # "high" | "medium" | "low"
+          chunk_risks:
+            - chunk_index: integer
+              start_token: integer
+              end_token: integer
+              text_snippet: string
+              norm_score: float
+              is_weak: boolean
+          metadata:
+            model_name: string
+            total_tokens: integer
+            analysis_time_ms: float
+        errors:
+          - ModelLoadError
+          - InputEmptyError
+          - InputTooLongError
+          - AnalysisError
+
+      - name: analyze_entropy
+        description: 仅执行注意力熵变率分析。返回每个 Token 的熵差值。
+        input:
+          text: string
+        output:
+          token_risks:
+            - token: string
+              token_id: integer
+              entropy_delta: float
+              risk_level: string
+          metadata:
+            model_name: string
+            total_tokens: integer
+            analysis_time_ms: float
+        errors:
+          - ModelLoadError
+          - InputEmptyError
+          - InputTooLongError
+          - AnalysisError
+
+      - name: scan_norm
+        description: 仅执行隐藏态范数扫描。返回每个文本块的信号强度。
+        input:
+          text: string
+          chunk_size: integer?  # 默认 128
+        output:
+          chunk_risks:
+            - chunk_index: integer
+              start_token: integer
+              end_token: integer
+              text_snippet: string
+              norm_score: float
+              is_weak: boolean
+          metadata:
+            model_name: string
+            total_tokens: integer
+            analysis_time_ms: float
+        errors:
+          - ModelLoadError
+          - InputEmptyError
+          - InputTooLongError
+          - AnalysisError
+
+      - name: run_ablation_on_70B
+        description: >
+          【预留】未来付费版接口。在 70B 级主模型上运行段落消融测试，
+          做精准因果推断。当前为占位桩，调用时抛出 NotImplementedError。
+        input:
+          text: string
+          target_model: string
+          endpoint: string
+        output:
+          ablation_results: object
+        errors:
+          - NotImplementedError
+
+  model-loader:
+    methods:
+      - name: load_model
+        description: 加载 Qwen2.5-0.5B 模型并配置 output_attentions/hidden_states
+        input: {}
+        output:
+          status: string   # "loaded" | "cached"
+          model_name: string
+          model_size: string
+        errors:
+          - ModelLoadError
+          - OOMError
+
+      - name: load_tokenizer
+        description: 加载与模型对应的 Tokenizer
+        input: {}
+        output:
+          vocab_size: integer
+          max_length: integer
+        errors:
+          - ModelLoadError
