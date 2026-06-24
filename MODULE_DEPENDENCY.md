@@ -28,8 +28,8 @@
 
 ```
 1. model-loader ✅
-2. entropy-analyzer (depends on model-loader)
-   norm-scanner     (depends on model-loader)  ← 可与 entropy 并行
+2. entropy-analyzer ✅ (depends on model-loader)
+   norm-scanner     ✅ (depends on model-loader)  ← 可与 entropy 并行
 3. ui-layer         (depends on entropy-analyzer, norm-scanner)
 ```
 

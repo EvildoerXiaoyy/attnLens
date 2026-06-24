@@ -257,7 +257,8 @@ class TestEdgeCases:
         """
         model = _make_model(num_layers=2, seq_len=4)
         results = scanner.scan_signal_strength(model, mock_tokenizer, "test")
-        assert len(results) >= 1
+        # 层数不足应安全回退，不抛异常
+        assert len(results) == 0, "层数不足 3 时应返回空列表"
         for c in results:
             assert "chunk_index" in c
             assert "norm_score" in c
