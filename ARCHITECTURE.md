@@ -55,8 +55,8 @@
 UI Layer (Streamlit)
   │
   ├─ analyze(prompt) → {
-  │     token_risks: [{token, entropy_delta, risk_level}],
-  │     chunk_risks: [{chunk_index, text, norm_score, is_weak}]
+  │     token_risks: [{token, token_text, entropy_delta, z_score, risk_level}],
+  │     chunk_risks: [{chunk_index, text, norm_score, norm_std, is_weak}]
   │   }
   │
   ├─ model_loader.get_model() → model
@@ -77,11 +77,11 @@ UI Layer (Streamlit)
     → Tokenizer 编码
     → Model forward pass (output_attentions=True)
     → 提取 layer[-1] 和 layer[-3] 的 attention 矩阵
-    → 取最后一个 Token 对所有历史 Token 的注意力分布 [:, -1, :]
-    → 计算每个头的熵，平均到每个层得到一个标量
-    → delta = entropy(layer[-1]) - entropy(layer[-3])（单个标量，作用于整个 Prompt）
-    → delta > 2.0 → 高风险 (红色)
-    → delta > 1.5 → 中风险 (黄色)
+    → 对每个 Token 位置 i 计算注意力分布 [:, i, :]
+    → 计算每个位置的熵，得逐位置熵差序列 delta[]
+    → 计算 delta 序列的 z-score，标记异常偏离位置
+    → z > 2.0 → 高风险 (红色), z > 1.3 → 中风险 (黄色)
+    → 同时保留绝对阈值 delta > 2.0/1.5
   → 返回 token_risks[]
   → Plotly 柱状图渲染
   → 原文高亮标注
@@ -98,9 +98,9 @@ UI Layer (Streamlit)
     → Model forward pass (output_hidden_states=True)
     → 提取 layer[-3] 的 hidden states
     → 计算每个 Token 的 L2 范数
-    → 按 chunk_size=128 聚合求平均
-    → 计算全局 15% 分位数
-    → 标记低于分位数的 chunk 为"弱信号"
+    → 按 chunk_size=32 聚合求平均和标准差
+    → 双重判定：均值低于 15% 分位数（信号弱）或标准差低于 15% 分位数（表征坍塌）
+    → 任一满足即标记为"弱信号"
   → 返回 chunk_risks[]
   → 灰色块渲染
   → Streamlit 展示
@@ -132,7 +132,7 @@ UI Layer (Streamlit)
 
 - **运行环境**：Mac M 系列芯片 / 纯 CPU，无需 GPU
 - **内存**：约 1-2GB（加载 0.5B 模型）
-- **延迟**：单次分析 < 10 秒（视输入长度）
+- **延迟**：首次需下载约 1GB 模型（分钟级）；后续分析 1K tokens 约 2-5 秒，10K tokens 约 10-30 秒
 - **网络**：仅模型下载时需要，运行时可离线
 - **模型参数量**：0.5B（Qwen2.5-0.5B）
 - **最大输入长度**：Qwen2.5-0.5B 上下文窗口（通常 32K tokens）
