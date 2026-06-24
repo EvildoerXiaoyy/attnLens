@@ -7,7 +7,6 @@
 """
 
 import logging
-import os
 from typing import Optional
 
 import torch
@@ -96,8 +95,15 @@ class ModelLoader:
         return {
             "status": "loaded",
             "model_name": self._model_name,
-            "model_size": "0.5B",
+            "model_size": self._parse_model_size(),
         }
+
+    def _parse_model_size(self) -> str:
+        """从模型名解析参数规模，如 'Qwen/Qwen2.5-0.5B' → '0.5B'"""
+        import re
+        short = self._model_name.split("/")[-1]
+        match = re.search(r"(\d+\.?\d*[BMK])", short)
+        return match.group(1) if match else "unknown"
 
     def load_tokenizer(self) -> dict:
         """实现 API_CONTRACT 定义的 load_tokenizer 方法"""

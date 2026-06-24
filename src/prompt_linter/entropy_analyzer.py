@@ -26,6 +26,11 @@ logger = logging.getLogger(__name__)
 HIGH_RISK_THRESHOLD = 2.0
 MEDIUM_RISK_THRESHOLD = 1.5
 
+# 风险等级常量
+RISK_HIGH = "high"
+RISK_MEDIUM = "medium"
+RISK_LOW = "low"
+
 
 class EntropyAnalyzer:
     """注意力熵变率分析器。
@@ -62,10 +67,10 @@ class EntropyAnalyzer:
     def _classify(self, delta: float) -> str:
         """根据 delta 值分类风险等级。"""
         if delta > self.high_risk_threshold:
-            return "high"
+            return RISK_HIGH
         if delta > self.medium_risk_threshold:
-            return "medium"
-        return "low"
+            return RISK_MEDIUM
+        return RISK_LOW
 
     def calc_entropy_delta(
         self,
@@ -124,17 +129,21 @@ class EntropyAnalyzer:
 
         # 解码 Token 并构建结果
         tokens = tokenizer.convert_ids_to_tokens(input_ids.tolist())
+        return self._build_results(input_ids.tolist(), tokens, delta_val, risk)
 
-        results = []
-        for tid, token_str in zip(input_ids.tolist(), tokens):
-            results.append({
-                "token": token_str,
+    def _build_results(
+        self, ids_list: list, tokens: list, delta: float, risk: str,
+    ) -> list[dict]:
+        """构建统一的分析结果列表。"""
+        return [
+            {
+                "token": tok,
                 "token_id": tid,
-                "entropy_delta": round(delta_val, 4),
+                "entropy_delta": round(delta, 4),
                 "risk_level": risk,
-            })
-
-        return results
+            }
+            for tid, tok in zip(ids_list, tokens)
+        ]
 
     def _build_fallback_results(
         self, tokenizer, input_ids: torch.Tensor
@@ -142,12 +151,4 @@ class EntropyAnalyzer:
         """输入过短时返回安全默认值。"""
         ids_list = input_ids.tolist()
         tokens = tokenizer.convert_ids_to_tokens(ids_list)
-        results = []
-        for tid, token_str in zip(ids_list, tokens):
-            results.append({
-                "token": token_str,
-                "token_id": tid,
-                "entropy_delta": 0.0,
-                "risk_level": "low",
-            })
-        return results
+        return self._build_results(ids_list, tokens, delta=0.0, risk=RISK_LOW)
