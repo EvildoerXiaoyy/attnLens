@@ -135,9 +135,14 @@ class EntropyAnalyzer:
 
         # 解码 Token
         tokens = tokenizer.convert_ids_to_tokens(input_ids.tolist())
+        token_texts = [
+            tokenizer.decode([tid]) for tid in input_ids.tolist()
+        ]
 
         results = []
-        for i, (tid, token_str) in enumerate(zip(input_ids.tolist(), tokens)):
+        for i, (tid, token_str, token_display) in enumerate(
+            zip(input_ids.tolist(), tokens, token_texts)
+        ):
             d = deltas[i]
             z = (d - mean_d) / std_d
 
@@ -148,6 +153,7 @@ class EntropyAnalyzer:
 
             results.append({
                 "token": token_str,
+                "token_text": token_display.strip(),
                 "token_id": tid,
                 "entropy_delta": d,
                 "z_score": round(z, 4),
@@ -162,13 +168,15 @@ class EntropyAnalyzer:
         """输入过短时返回安全默认值。"""
         ids_list = input_ids.tolist()
         tokens = tokenizer.convert_ids_to_tokens(ids_list)
+        token_texts = [tokenizer.decode([tid]).strip() for tid in ids_list]
         return [
             {
                 "token": tok,
+                "token_text": txt,
                 "token_id": tid,
                 "entropy_delta": 0.0,
                 "z_score": 0.0,
                 "risk_level": RISK_LOW,
             }
-            for tid, tok in zip(ids_list, tokens)
+            for tid, tok, txt in zip(ids_list, tokens, token_texts)
         ]

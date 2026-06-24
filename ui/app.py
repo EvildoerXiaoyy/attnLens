@@ -138,7 +138,7 @@ def _risk_color(risk_level: str) -> str:
 
 def build_entropy_figure(token_risks: list[dict]) -> go.Figure:
     """构建 Token 级熵变率柱状图。"""
-    tokens = [r["token"] for r in token_risks]
+    tokens = [r.get("token_text", r["token"]) for r in token_risks]
     deltas = [r["entropy_delta"] for r in token_risks]
     colors = [_risk_color(r["risk_level"]) for r in token_risks]
 
@@ -167,7 +167,7 @@ def highlight_tokens(token_risks: list[dict]) -> str:
     """将高风险 Token 用红色加粗标记，中风险用黄色。"""
     parts = []
     for r in token_risks:
-        token = r["token"].replace("▁", " ").replace("<|endoftext|>", "⋯")
+        token = r.get("token_text", r["token"]).replace("▁", " ").replace("<|endoftext|>", "⋯")
         if r["risk_level"] == "high":
             parts.append(
                 f'<span style="color:{RISK_COLOR_HIGH};font-weight:bold;background:{BG_COLOR_HIGH}">{token}</span>'

@@ -240,6 +240,11 @@ class MockTokenizer:
     def convert_tokens_to_string(self, tokens: list[str]) -> str:
         return " ".join(tokens)
 
+    def decode(self, token_ids: list[int]) -> str:
+        """模拟 decode：逐个 id 查 token 后拼接。"""
+        tokens = [f"id_{tid}" for tid in token_ids]
+        return self.convert_tokens_to_string(tokens)
+
 
 class MockModelLoader:
     """模拟 ModelLoader，提供 load_model / load_tokenizer 接口。
