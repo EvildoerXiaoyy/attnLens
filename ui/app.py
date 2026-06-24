@@ -203,7 +203,6 @@ def build_norm_figure(chunk_risks: list[dict]) -> go.Figure:
     )
     fig.update_layout(
         title="文本块信号强度 (Hidden State L2 Norm)",
-        xaxis_title="文本块",
         yaxis_title="平均 L2 范数",
         height=350, hovermode="x", showlegend=False,
     )
@@ -243,7 +242,8 @@ def _show_norm_results(result: dict):
                 f"Norm: {c['norm_score']:.4f})"
             ):
                 st.markdown(f"**预览:** {c['text_snippet']}")
-                st.markdown("**建议:** 此段信号弱，可考虑删除或前置")
+                st.markdown(f"**信号强度:** mean={c['norm_score']:.2f}, std={c['norm_std']:.2f} "
+                            f"{'(表征坍塌)' if c.get('norm_std', 1) < 0.5 else ''}")
 
 
 # ── 主页面 ────────────────────────────────────────────────────────

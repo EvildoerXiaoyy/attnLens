@@ -147,6 +147,7 @@ class NormScanner:
                 "end_token": end,
                 "text_snippet": text_snippet[:100],
                 "norm_score": float(np.mean(chunk_norms).round(4)),
+                "norm_std": float(np.std(chunk_norms).round(4)),
                 "is_weak": False,
             })
 
@@ -155,10 +156,19 @@ class NormScanner:
     # ── 百分位标记 ─────────────────────────────────────────────────
 
     def _mark_weak_chunks(self, chunks: list[dict]):
-        """标记低于全局弱信号分位数的块（严格小于，见 ADR-002 约定）。"""
+        """标记弱信号块（双重判定，见 ADR-002 约定）。
+
+        判定条件（任一满足即标记）：
+        1. norm_score < 全局 15% 分位数（均值偏低 = 信号弱）
+        2. norm_std < 全局 15% 分位数（标准差过低 = 表征坍塌）
+        """
         if not chunks:
             return
         all_means = np.array([c["norm_score"] for c in chunks])
-        threshold = np.percentile(all_means, self.weak_percentile)
+        all_stds = np.array([c["norm_std"] for c in chunks])
+        mean_threshold = np.percentile(all_means, self.weak_percentile)
+        std_threshold = np.percentile(all_stds, self.weak_percentile)
         for c in chunks:
-            c["is_weak"] = bool(c["norm_score"] < threshold)
+            c["is_weak"] = bool(
+                c["norm_score"] < mean_threshold or c["norm_std"] < std_threshold
+            )

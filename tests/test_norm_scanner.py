@@ -53,6 +53,7 @@ class TestHappyPath:
             assert "end_token" in c
             assert "text_snippet" in c
             assert "norm_score" in c
+            assert "norm_std" in c
             assert "is_weak" in c
 
     def test_chunk_size_respected(self, scanner, mock_tokenizer):
@@ -206,15 +207,16 @@ class TestWeakPercentile:
         assert weak_count == 0, "percentile=0 时无块应低于 0 分位数"
 
     def test_hundred_percentile(self, mock_tokenizer):
-        """Boundary: weak_percentile=100 时阈值=最大值；严格 < 下最大值块不算弱（F1 修复）"""
+        """Boundary: weak_percentile=100 时阈值=最大值；严格 < 下最大值块不算弱（F1 修复）
+
+        注：双阈值（mean + std）下 MockModel 的近均匀块可能全部触发标记。
+        """
         all_weak = NormScanner(chunk_size=4, weak_percentile=100)
         model = _make_model()
         results = all_weak.scan_signal_strength(model, mock_tokenizer, "x" * 16)
         weak_count = sum(1 for c in results if c["is_weak"])
-        # 严格 < 约定：最大值块本身不算弱 → len-1（假定范数无重复）
-        assert weak_count == len(results) - 1, (
-            f"严格 < 约定下 percentile=100 应有 len-1 个弱块，实际 {weak_count}"
-        )
+        # 双阈值（OR）下可能全部触发，也可能 len-1（仅最大值未触发）
+        assert weak_count >= len(results) - 1, f"percentile=100 应标记几乎所有块"
 
     def test_negative_percentile(self, mock_tokenizer):
         """Error: 负百分位应被防御（默认 15 或抛异常）"""
@@ -262,6 +264,7 @@ class TestEdgeCases:
         for c in results:
             assert "chunk_index" in c
             assert "norm_score" in c
+            assert "norm_std" in c
             assert "is_weak" in c
             assert isinstance(c["norm_score"], float)
             assert isinstance(c["is_weak"], bool)
