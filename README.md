@@ -56,6 +56,8 @@ pytest tests/ -v --tb=short
 3. **阶段二（TDD 实现）**：model-loader → entropy-analyzer → norm-scanner → ui-layer
 4. **阶段三（实测验证）**：用 10 条病理 Prompt 测试 → 信噪比不足 → **终止**
 
+> 本项目全程使用 **纯 Vibe Coding** 完成，基于 [Reasonix Workflow](https://github.com/EvildoerXiaoyy/reasonix-skills/tree/main) 四层开发工作流（整体规划 → 模块并行 TDD → 集成 → 回顾）驱动，AI Agent 自主完成架构设计、测试编写、代码实现、外部审查全流程。
+
 ## 技术栈
 
 - **代理模型**: Qwen2.5-0.5B (HuggingFace Transformers)
