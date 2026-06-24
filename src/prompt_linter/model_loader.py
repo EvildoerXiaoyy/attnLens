@@ -68,6 +68,8 @@ class ModelLoader:
                 trust_remote_code=True,
                 torch_dtype=torch.float32,  # CPU 上使用 float32
                 low_cpu_mem_usage=True,
+                # 使用 eager attention 以支持 output_attentions（SDPA 不支持）
+                attn_implementation="eager",
             )
 
             # 设置为评估模式

@@ -3,9 +3,11 @@
 from .model_loader import ModelLoader, ModelLoadError, OOMError
 from .entropy_analyzer import EntropyAnalyzer, RISK_HIGH, RISK_MEDIUM, RISK_LOW
 from .norm_scanner import NormScanner
+from .prompt_linter import PromptLinter
 
 __all__ = [
     "ModelLoader", "ModelLoadError", "OOMError",
     "EntropyAnalyzer", "RISK_HIGH", "RISK_MEDIUM", "RISK_LOW",
     "NormScanner",
+    "PromptLinter",
 ]
